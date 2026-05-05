@@ -8,7 +8,7 @@ depends="alsa-lib libsecret libgbm libdrm libcups eudev-libudev
  hicolor-icon-theme xdg-utils"
 noverifyrdeps=yes
 short_desc="Knowledge base and note-taking app using Markdown"
-maintainer="Vostok Linux <davidivashevich@gmail.com>"
+maintainer="cybarchitect <cybarchitect@gmail.com>"
 license="custom:Obsidian-EULA"
 homepage="https://obsidian.md"
 changelog="https://obsidian.md/changelog"
