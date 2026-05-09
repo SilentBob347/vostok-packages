@@ -2,7 +2,7 @@
 pkgname=yandex-browser
 version=26.3.1.1088
 revision=1
-_channel=stable
+_channel=corporate
 archs="x86_64"
 hostmakedepends="curl tar xz python3 python3-html2text python3-setuptools"
 depends="gtk+3 ffmpeg squashfs-tools"
