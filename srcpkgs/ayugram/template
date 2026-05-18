@@ -1,7 +1,7 @@
 # Template file for 'ayugram'
 pkgname=ayugram
 version=6.7.8
-revision=3
+revision=1
 wrksrc="AyuGramDesktop-${version}"
 build_style=cmake
 build_helper="qemu gir"
