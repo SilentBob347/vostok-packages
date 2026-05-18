@@ -1,7 +1,7 @@
 # Template file for 'ayugram'
 pkgname=ayugram
 version=6.7.8
-revision=1
+revision=2
 wrksrc="AyuGramDesktop-${version}"
 build_style=cmake
 build_helper="qemu gir"
@@ -24,7 +24,7 @@ makedepends="alsa-lib-devel boost-devel-minimal libboost_regex
  xcb-util-keysyms-devel hunspell-devel protobuf-devel
  glibmm2.68-devel tg_owt rnnoise-devel jemalloc-devel
  qt6-declarative-devel libdispatch-devel"
-depends="qt6-imageformats ttf-opensans"
+depends="qt6-imageformats ttf-opensans libvpx"
 short_desc="AyuGram Desktop - Telegram client with additional features"
 maintainer="Vostok Linux <packaging@vostoklinux.org>"
 license="GPL-3.0-or-later"
