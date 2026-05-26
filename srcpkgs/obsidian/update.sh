@@ -31,7 +31,6 @@ fi
 
 echo "obsidian-bin: ${CURRENT} → ${LATEST}"
 
-# Get AppImage URL directly from assets
 DOWNLOAD_URL=$(echo "${INFO}" | python3 -c "
 import sys, json
 d = json.load(sys.stdin)
