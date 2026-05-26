@@ -45,7 +45,6 @@ pre_configure() {
 }
 
 post_install() {
-	# Rename binary and desktop to avoid conflict with telegram-desktop
 	if [ -f ${DESTDIR}/usr/bin/ayugram-desktop ]; then
 		mv ${DESTDIR}/usr/bin/ayugram-desktop ${DESTDIR}/usr/bin/ayugram
 	elif [ -f ${DESTDIR}/usr/bin/telegram-desktop ]; then
