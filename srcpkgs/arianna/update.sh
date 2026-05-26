@@ -7,7 +7,6 @@ CURRENT=$(grep '^version=' "${TEMPLATE}" | cut -d= -f2)
 
 echo "Fetching latest Arianna version from KDE release-service..."
 
-# KDE uses release-service versioning — fetch latest from download.kde.org
 LATEST=$(curl -fsSL "https://download.kde.org/stable/release-service/" \
     | grep -oP 'href="\K[\d]+\.[\d]+\.[\d]+(?=/)' \
     | sort -V \
