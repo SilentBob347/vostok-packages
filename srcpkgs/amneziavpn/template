@@ -27,7 +27,6 @@ post_extract() {
 	[ -z "${installer}" ] && msg_error "amneziavpn: installer .bin not found"
 	echo "=> Installer: ${installer} ($(du -sh ${installer} | cut -f1))"
 
-	# Try all 7z signatures from LAST to FIRST and pick largest valid archive
 	python3 - "${installer}" "${wrksrc}" << 'PYEOF'
 import sys, os, subprocess
 
@@ -59,12 +58,11 @@ for offset in reversed(offsets):
     with open(out_7z, 'wb') as f:
         f.write(data[offset:])
 
-    # List archive contents to check validity and size
     r = subprocess.run(
         ["7z", "l", out_7z],
         capture_output=True, text=True
     )
-    # Count listed files
+
     count = r.stdout.count('\n')
     print(f"  Listed lines: {count}, returncode: {r.returncode}")
 
@@ -72,7 +70,6 @@ for offset in reversed(offsets):
         best_count = count
         best_offset = offset
 
-    # Check if it contains client/service dirs
     if 'client' in r.stdout and 'service' in r.stdout:
         print(f"  => MATCH: contains client and service dirs")
         break
@@ -94,7 +91,6 @@ r = subprocess.run(
 print(r.stdout[-500:] if len(r.stdout) > 500 else r.stdout)
 if r.returncode not in (0, 1):
     print(f"STDERR: {r.stderr[-200:]}")
-    # Don't fail yet — check if files extracted
 os.remove(out_7z)
 os.remove(installer)
 print("=> Done")
