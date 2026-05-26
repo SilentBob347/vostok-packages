@@ -13,7 +13,6 @@ PACKAGES=$(curl -fsSL \
 
 LATEST=$(echo "${PACKAGES}" | grep '^Version:' | head -1 | grep -oP '[\d\.]+(?=-1)')
 
-# Full path from Packages.gz e.g. pool/main/y/yandex-browser-corporate/yandex-browser-corporate_26.3.5.855-1_amd64.deb
 FILEPATH=$(echo "${PACKAGES}" | grep '^Filename:' | head -1 | awk '{print $2}')
 FILENAME=$(basename "${FILEPATH}")
 CHANNEL=$(echo "${FILENAME}" | grep -oP 'yandex-browser-\K[^_]+(?=_)')
@@ -44,8 +43,6 @@ sed -i "s/^checksum=.*/checksum=${CHECKSUM}/" "${TEMPLATE}"
 sed -i "s/^revision=.*/revision=1/" "${TEMPLATE}"
 sed -i "s/^_channel=.*/_channel=${CHANNEL}/" "${TEMPLATE}"
 
-# Update distfiles with exact URL using variables
-# Keep ${version} so future manual edits stay clean
 DISTFILES_LINE="distfiles=\"https://repo.yandex.ru/yandex-browser/deb/pool/main/y/yandex-browser-\${_channel}/yandex-browser-\${_channel}_\${version}-1_amd64.deb\""
 sed -i "s|^distfiles=.*|${DISTFILES_LINE}|" "${TEMPLATE}"
 
