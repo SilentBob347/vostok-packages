@@ -3,12 +3,12 @@ name: Build and Deploy Vostok Packages
 on:
   pull_request:
     paths:
-      - 'srcpkgs/**'
+      - "srcpkgs/**"
   push:
     branches:
       - main
     paths:
-      - 'srcpkgs/**'
+      - "srcpkgs/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -32,9 +32,18 @@ jobs:
       - name: Prepare container
         run: |
           mkdir -p /etc/xbps.d
+          # Используем ТОЛЬКО основное зеркало Void, чтобы избежать устаревших копий
+          echo 'repository=https://repo-default.voidlinux.org/current' > /etc/xbps.d/00-repository-main.conf
+          echo 'repository=https://repo-default.voidlinux.org/current/nonfree' >> /etc/xbps.d/00-repository-main.conf
+          # Копируем остальные конфиги из образа (multilib и т.д.) – они не переопределят main, т.к. 00- читается первым
           cp /usr/share/xbps.d/*-repository-*.conf /etc/xbps.d/
-          #sed -i 's|repo-default|repo-ci|g' /etc/xbps.d/*-repository-*.conf
+
           xbps-install -Syu xbps && xbps-install -yu
+
+          # Отладка: какая версия Qt доступна в хост-системе
+          echo "=== Host Qt version ==="
+          xbps-query -p pkgver qt6-core || true
+
           xbps-install -y sudo bash curl git xtools
           useradd -G xbuilder -M builder
           echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
@@ -57,6 +66,10 @@ jobs:
           chown -R builder:builder .
           sudo -Eu builder ./xbps-src binary-bootstrap
           sudo -Eu builder ./xbps-src update-sys
+
+          # Проверка версии Qt внутри сборочного chroot
+          echo "=== Qt version in masterdir ==="
+          sudo -Eu builder chroot masterdir xbps-query -p pkgver qt6-core || true
 
       - name: Find changed templates
         id: changed
@@ -116,7 +129,7 @@ jobs:
           [ -d masterdir ] && chown -R builder:builder masterdir
           [ -d hostdir ] && chown -R builder:builder hostdir
           echo "XBPS_ALLOW_RESTRICTED=yes" >> etc/conf
-          
+
           FAILED=0
           for pkg in ${{ steps.changed.outputs.packages }}; do
             echo "━━━ Building: $pkg ━━━"
@@ -180,20 +193,19 @@ jobs:
         run: |
           # 1. Декодируем base64 (удаляя возможные пробелы/переносы)
           echo "$XBPS_SIGNING_KEY" | tr -d '\n\r ' | base64 -d > /tmp/vostok-repo.raw
-          
+
           # 2. Конвертируем в классический RSA (PKCS#1)
           openssl rsa -in /tmp/vostok-repo.raw -out /tmp/vostok-repo.key
-          
+
           chmod 600 /tmp/vostok-repo.key
           rm /tmp/vostok-repo.raw
           echo "Ключ успешно подготовлен"
 
-      
       - name: Sign packages
         run: |
           cd ./pkgs
           find . -mindepth 2 -name "*.xbps" -exec mv -t . {} +
-          
+
           if [ -z "$(ls *.xbps 2>/dev/null)" ]; then
             echo "Ошибка: Пакеты .xbps не найдены в ./pkgs"
             exit 1
@@ -213,7 +225,7 @@ jobs:
           for pkg in *.xbps; do
             xbps-rindex -a "$pkg"
           done
-          
+
           xbps-rindex -s \
             --privkey /tmp/vostok-repo.key \
             --signedby "Vostok Linux" \
@@ -223,11 +235,11 @@ jobs:
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_USER: builder  # Мы точно знаем, что это builder
+          VPS_USER: builder # Мы точно знаем, что это builder
         run: |
           # 1. Создаем временный файл ключа прямо в папке проекта
           echo "$SSH_PRIVATE_KEY" > deploy_key
-          
+
           # Очищаем от возможных кривых переносов строк
           sed -i 's/\\n/\n/g' deploy_key
           chmod 600 deploy_key
@@ -244,8 +256,6 @@ jobs:
 
           # 4. Удаляем временные файлы
           rm deploy_key vps_hosts
-
-
 
       - name: Cleanup sensitive files
         if: always()
