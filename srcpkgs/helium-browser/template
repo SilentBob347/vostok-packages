@@ -5,7 +5,7 @@ revision=1
 archs="x86_64"
 wrksrc="helium-${version}"
 depends="alsa-lib libsecret libgbm libdrm libcups eudev-libudev"
-short_desc="Private, fast, and honest web browser."
+short_desc="Private, fast, and honest web browser. Built for those who value speed and true digital sovereignty"
 maintainer="cybarchitect <cybarchitect@gmail.com>"
 license="GPL-3.0-only"
 homepage="https://github.com/imputnet/helium"
@@ -13,6 +13,7 @@ distfiles="https://github.com/imputnet/helium-linux/releases/download/${version}
 checksum=3a04bc1e42c1b1e16b121345271330a756e0d20ccf75f63555ac92000a7bbead
 nostrip=yes
 noshlibs=yes
+ignored_shlibs="libvulkan.so.1"
 
 do_extract() {
 	local appimage="${XBPS_SRCDISTDIR}/${pkgname}-${version}/helium-${version}.AppImage"
