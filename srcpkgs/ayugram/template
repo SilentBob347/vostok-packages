@@ -30,7 +30,6 @@ maintainer="Vostok Linux <packaging@vostoklinux.org>"
 license="GPL-3.0-or-later"
 homepage="https://github.com/AyuGram/AyuGramDesktop"
 changelog="https://github.com/AyuGram/AyuGramDesktop/releases/tag/v${version}"
-# Use full tarball — includes all submodules
 distfiles="https://github.com/AyuGram/AyuGramDesktop/releases/download/v${version}/AyuGramDesktop-${version}-full.tar.gz"
 checksum=c8de66c5568dfc3e4e309275cc858e84a61f781fe93ed967290c31b70c770b00
 nocross=yes
