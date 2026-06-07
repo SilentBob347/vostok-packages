@@ -1,82 +1,57 @@
 # Template file for 'lm-studio'
 pkgname=lm-studio
-version=0.4.2
-revision=2
+version=0.4.16
+revision=1
 archs="x86_64"
 wrksrc="lmstudio-${version}"
-hostmakedepends="fuse"
-distfiles="https://installers.lmstudio.ai/linux/x64/${version}-${revision}/LM-Studio-${version}-${revision}-x64.AppImage"
-checksum="2711a5aa0b2e2dc5bcd66388727b551521efd7dcd2168b880a1833fde81cf89d"
+hostmakedepends="fuse glib"
+distfiles="https://installers.lmstudio.ai/linux/x64/${version}-1/LM-Studio-${version}-1-x64.AppImage"
+checksum="0cb07557b7529072a5273e820da1e01642718e9b5d18f2fd7b7df0ed95d1ddaf"
 homepage="https://lmstudio.ai/"
 license="custom:EULA"
 short_desc="LM Studio - A desktop app for exploring and running large language models locally (AppImage repack)"
-maintainer="Vostok Linux <vostoklinux.org>"
+maintainer="cybarchitect <cybarchitect@gmail.com>"
 nostrip=yes
-python_version=3
 noshlibs=yes
-python_shebang_whitelist="/opt/lm-studio/*"
-shlib_provides="libffmpeg.so libcublas.so.11 libcublasLt.so.11 libcudart.so.11.0 
- libvulkan.so.1 libpython3.11.so.1.0 libcuda.so.1 libdbusmenu-gtk.so.4 
- libggml-base.so libggml-cpu.so libggml-cuda.so libggml-vulkan.so 
- libggml_llamacpp.so libllama.so libllm_engine.so liblmstudiocore.so 
- libmtmd.so libvips-cpp.so.42 libindicator.so.7
- \$ORIGIN/../lib/libpython3.11.so.1.0"
+noverifyrdeps=yes
+python_version=3
 
-depends="hicolor-icon-theme xdg-utils nss nspr glib dbus-libs 
- alsa-lib at-spi2-core cairo cups expat fontconfig freetype 
- gdk-pixbuf gtk+3 libX11 libXcomposite libXdamage libXext 
- libXfixes libXrandr libXrender libXtst libdrm libgbm libsecret 
- libxcb xcb-util-cursor libXinerama libxshmfence mesa-dri 
- libdbusmenu-gtk3 pango"
+depends="libsecret libgbm eudev-libudev alsa-lib libcups libpulseaudio"
 
 do_extract() {
-	cd ${XBPS_BUILDDIR}
-
-	chmod +x ${XBPS_SRCDISTDIR}/${pkgname}-${version}/LM-Studio-${version}-${revision}-x64.AppImage
-	
-	${XBPS_SRCDISTDIR}/${pkgname}-${version}/LM-Studio-${version}-${revision}-x64.AppImage --appimage-extract
-	
-	rm -rf ${pkgname}-${version}
-	
-	mv squashfs-root ${pkgname}-${version}
+    local appimage="${XBPS_SRCDISTDIR}/${pkgname}-${version}/LM-Studio-${version}-1-x64.AppImage"
+    chmod +x "${appimage}"
+    cd "${XBPS_BUILDDIR}"
+    "${appimage}" --appimage-extract
+    rm -rf "${wrksrc}"
+    mv squashfs-root "${wrksrc}"
 }
 
 do_install() {
-	vmkdir opt/lm-studio
-	vcopy "*" opt/lm-studio
+    vmkdir opt/lm-studio
+    vcopy "*" opt/lm-studio
 
-	find ${DESTDIR}/opt/lm-studio -type d -exec chmod 755 {} +
-	find ${DESTDIR}/opt/lm-studio -type f -exec chmod 644 {} +
+    find ${DESTDIR}/opt/lm-studio -xtype l -delete
+    find ${DESTDIR}/opt/lm-studio -name "* *" -exec rm -rf {} +
+    find ${DESTDIR}/opt/lm-studio -type f -links +1 | while IFS= read -r f; do
+        cp --remove-destination "${f}" "${f}.tmp"
+        mv "${f}.tmp" "${f}"
+    done
 
-	chmod -R 755 ${DESTDIR}/opt/lm-studio
+    if [ -f ${DESTDIR}/opt/lm-studio/chrome-sandbox ]; then
+        chmod 4755 ${DESTDIR}/opt/lm-studio/chrome-sandbox
+    fi
+    if [ -f ${DESTDIR}/opt/lm-studio/chrome_crashpad_handler ]; then
+        chmod 755 ${DESTDIR}/opt/lm-studio/chrome_crashpad_handler
+    fi
 
-	if [ -f ${DESTDIR}/opt/lm-studio/chrome-sandbox ]; then
-		chmod 4755 ${DESTDIR}/opt/lm-studio/chrome-sandbox
-	fi
+    vmkdir usr/bin
+    ln -sf /opt/lm-studio/lm-studio ${DESTDIR}/usr/bin/lmstudio
+    vmkdir usr/share/icons/hicolor/256x256/apps
+    vinstall ${FILESDIR}/lmstudio.png 644 usr/share/icons/hicolor/256x256/apps lmstudio.png
+    vmkdir usr/share/pixmaps
+    vinstall ${FILESDIR}/lmstudio.png 644 usr/share/pixmaps lmstudio.png
 
-	if [ -f ${DESTDIR}/opt/lm-studio/chrome_crashpad_handler ]; then
-		chmod 755 ${DESTDIR}/opt/lm-studio/chrome_crashpad_handler
-	fi
-
-	vmkdir usr/bin
-	ln -sf /opt/lm-studio/lm-studio ${DESTDIR}/usr/bin/lmstudio
-
-	vmkdir usr/share/applications
-	cat > ${DESTDIR}/usr/share/applications/lm-studio.desktop <<EOF
-[Desktop Entry]
-Name=LM Studio
-Comment=Run LLMs locally (Llama, Mistral, etc.)
-# Добавляем --no-sandbox, чтобы обойти ограничения ядра Void
-Exec=lmstudio --no-sandbox --enable-features=UseOzonePlatform --ozone-platform=wayland %U
-Icon=lmstudio
-Type=Application
-Categories=Development;ArtificialIntelligence;
-Terminal=false
-StartupWMClass=LM Studio
-EOF
-
-	if [ -f ${FILESDIR}/lmstudio.png ]; then
-		vinstall ${FILESDIR}/lmstudio.png 644 usr/share/pixmaps
-		vinstall ${FILESDIR}/lmstudio.png 644 usr/share/icons/hicolor/256x256/apps lmstudio.png
-	fi
+    vmkdir usr/share/applications
+    vinstall ${FILESDIR}/lm-studio.desktop 644 usr/share/applications
 }
