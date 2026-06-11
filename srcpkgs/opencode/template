@@ -10,7 +10,7 @@ checksum=5c82f608207ae8254c43e331d90d96915aea19e78474e311b2c88b6bbb7c93f0
 homepage="https://github.com/anomalyco/opencode"
 license="MIT"
 short_desc="Open source AI coding agent (CLI/TUI version)"
-maintainer="Vostok Linux <vostoklinux.org>"
+maintainer="cybarchitect <cybarchitect@gmail.com>"
 nostrip=yes
 
 depends="ripgrep"
