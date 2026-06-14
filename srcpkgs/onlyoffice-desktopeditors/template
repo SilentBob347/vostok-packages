@@ -1,0 +1,36 @@
+# Template file for 'onlyoffice-desktopeditors'
+pkgname=onlyoffice-desktopeditors
+version=9.4.0
+revision=1
+archs="x86_64"
+wrksrc="onlyoffice-desktopeditors-${version}"
+hostmakedepends="libarchive"
+short_desc="ONLYOFFICE Desktop Editors - office productivity suite"
+maintainer="cybarchitect <cybarchitect@gmail.com>"
+license="AGPL-3.0-or-later"
+homepage="https://www.onlyoffice.com/"
+distfiles="https://github.com/ONLYOFFICE/DesktopEditors/releases/download/v${version}/onlyoffice-desktopeditors_amd64.deb"
+checksum=4271434e81be42b1559fd989d24bf6d413482f278dc6a5e328202a4fc1a18649
+nostrip=yes
+noshlibs=yes
+noverifyrdeps=yes
+
+depends="libsecret libgbm eudev-libudev alsa-lib libcups libpulseaudio gtk+3"
+
+do_extract() {
+    mkdir -p "${wrksrc}"
+    bsdtar -xf ${XBPS_SRCDISTDIR}/${pkgname}-${version}/onlyoffice-desktopeditors_amd64.deb \
+        -C "${wrksrc}" --include='data.tar*'
+    bsdtar -xf "${wrksrc}"/data.tar.* -C "${wrksrc}"
+    rm "${wrksrc}"/data.tar.*
+}
+
+do_install() {
+    vcopy "usr/*" usr
+    vmkdir opt/onlyoffice/desktopeditors
+    vcopy "opt/onlyoffice/desktopeditors/*" opt/onlyoffice/desktopeditors
+    rm -f ${DESTDIR}/usr/share/applications/onlyoffice-desktopeditors.desktop
+    vmkdir usr/share/applications
+    vinstall ${FILESDIR}/onlyoffice-desktopeditors.desktop 644 usr/share/applications
+    vlicense usr/share/licenses/onlyoffice-desktopeditors/LICENSE
+}
